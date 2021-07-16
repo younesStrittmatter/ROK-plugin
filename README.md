@@ -2,9 +2,7 @@
 
 ####A plugin for jsPsych to display orientated objects instead of dots in a RDK.  
 
-####To use it you need the jsPsych JavaScript library (https://www.jspsych.org/). Copy the jspsych-rok.js file into the plugin-folder of the jsPsych library. If you want to use the stimuli provided in with this plugin copy the res-folder into your experiments project folder. See tge 
-
-####In the res folder are examples for animated and non animated, mirrored and non mirrored objects. These can be loaded as orientated objects.
+####To use it you need the jsPsych JavaScript library (https://www.jspsych.org/). Copy the file jspsych-rok.js (located in the plugins folder of the repositiry) into the plugins-folder of the jsPsych library. If you want to use the stimuli provided with this plugin copy the res-folder into your experiments project folder. See the documentary (docs) folder or the example folder for further instructions. You can use the examples folder (alongside the jsPsych libary) as template to run your own experiments.
 
 ####We would appreciate it if you cited this paper when you use the plugin: 
 
