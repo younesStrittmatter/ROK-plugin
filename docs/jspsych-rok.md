@@ -18,6 +18,7 @@ The elements of the array then apply to the corresponding aperture. Features tha
 choices|array|[]|The valid keys that the subject can press to indicate a response|must|
 correct_choice|string|undefined|The correct keys for that trial|can|
 number_of_apertures|INT|1|Number of apertures. If greater then one, other parameters of trial should be arrays|can|
+density_unit_area|INT|null|If this parameter is set, number_of_objects is interpreted as number_of_objects per density_unit_area (in pixels*pixels)"
 aperture_width|INT|600|The width of the aperture in pixels|can|
 aperture_height|INT|400|he height of the aperture in pixels|can|
 aperture_position_left|INT|50|Position of midpoint of aperture in x direction in percentage of window width (50 being middle)|can|
@@ -53,13 +54,12 @@ units|STRING|null|Units in which size and speed of oobs is expressed (null - per
 
 
 ### Image Loading
-If image are keyframed, the keyframes must be loaded as one picture in a framesheet. Keyframes are next to each other. If the image should be mirrored a mirrored version of the image must be in the same sheet below the original keyframe.
+If image are key framed, the keyframes must be loaded as one picture in a frame sheet. Keyframes are next to each other. If the image should be mirrored a mirrored version of the image must be in the same sheet below the original keyframe.
 
 
 ## Data Generated
 
 In addition to the default data collected by all plugins, this plugin collects all parameter data described above and the following data for each trial.
-
 
 |Name|Type|Value|
 |----|----|-----|
@@ -68,7 +68,7 @@ In addition to the default data collected by all plugins, this plugin collects a
 |correct|boolean|Whether or not the subject's key press corresponded to those provided in correct_choice.|
 |frame_rate|numeric|The average frame rate for the trial. 0 denotes that the subject responded before the appearance of the second frame.|
 |number_of_frames|numeric|The number of frames that was shown in this trial.|
-|frame_rate_array|JSON string|The array that holds the number of miliseconds for each frame in this trial.|
+|frame_rate_array|JSON string|The array that holds the number of milliseconds for each frame in this trial.|
 |canvas_width|numeric|The width of the canvas in pixels.|
 |canvas_height|numeric|The height of the canvas in pixels.|
                 
