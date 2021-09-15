@@ -4,10 +4,6 @@
 	----------------------
 
 	We would appreciate it if you cited this paper when you use the ROK:
-
-	We would appreciate it if you cited this paper when you use the plugin:
-
-    Strittmatter, Y., Spitzer, M., & Kiesel, A. (2021, July 12). A Random-Object-Kinematogram Plugin for Web-Based Research: Implementing Oriented Objects Enables Varying Coherence Levels and Stimulus Congruency Levels. DOI: [10.31234/osf.io/hmq4u]
 	
 	----------------------
 	
@@ -198,6 +194,12 @@ jsPsych.plugins["rok"] = (function () {
                 default: 1,
                 description: "Number of apertures. If greater then one, other parameters of trial should be arrays"
             },
+            density_unit_area: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: "Density area",
+                default: null,
+                description: "If this parameter is set, number_of_objects is interpreted as average number_of_objects per density_unit_area (in pixels)"
+            },
             aperture_position_left: {
                 type: jsPsych.plugins.parameterType.INT,
                 pretty_name: "Horizontal position of aperature",
@@ -278,7 +280,7 @@ jsPsych.plugins["rok"] = (function () {
                 type: jsPsych.plugins.parameterType.STRING,
                 pretty_name: "Units in which size and speed of oobs is expressed",
                 default: null,
-                description: "Units in which size and speed of oobs is expressed (null - percentage of aperture width, px - pixels"
+                description: "Units in which size and speed of oobs is expressed (null - percentage of aperture width, px - pixels)"
             }
         }
     };
@@ -319,6 +321,7 @@ jsPsych.plugins["rok"] = (function () {
         trial.random_movement_type = assignParameterValue(trial.random_movement_type, plugin.info.parameters.random_movement_type.default);
         trial.random_orientation_type = assignParameterValue(trial.random_orientation_type, plugin.info.parameters.random_orientation_type.default);
         trial.number_of_apertures = assignParameterValue(trial.number_of_apertures, plugin.info.parameters.number_of_apertures.default);
+        trial.density_unit_area = assignParameterValue(trial.density_unit_area, plugin.info.parameters.number_of_apertures.default);
         trial.aperture_position_left = assignParameterValue(trial.aperture_position_left, plugin.info.parameters.aperture_position_left.default);
         trial.aperture_position_top = assignParameterValue(trial.aperture_position_top, plugin.info.parameters.aperture_position_top.default);
         trial.prompt = assignParameterValue(trial.prompt, plugin.info.parameters.prompt.default);
@@ -361,7 +364,10 @@ jsPsych.plugins["rok"] = (function () {
                 containerArray[i].style.backgroundRepeat = 'no-repeat';
                 containerArray[i].style.backgroundSize = 'cover';
             }
+
+
             display_element.appendChild(containerArray[i]);
+
             containerArray[i].appendChild(canvasArray[i]);
             if (Array.isArray(trial.prompt)) {
                 let p = document.createElement('div');
@@ -395,12 +401,15 @@ jsPsych.plugins["rok"] = (function () {
         body.style.padding = 0;
 
 
-        //Remove the margins and padding of the canvas
+        //Remove the margins and padding of the canvas, center it
         for (let i = 0; i < nApertures; i++) {
             containerArray[i].style.margin = '0px';
             containerArray[i].style.margin = '0px';
             canvasArray[i].style.margin = '0px';
             canvasArray[i].style.padding = '0px';
+            canvasArray[i].style.position = 'absolute';
+            canvasArray[i].style.transform = 'translate(-50%, -50%)';
+
         }
 
         //Set background color of body to be the same as
@@ -412,16 +421,24 @@ jsPsych.plugins["rok"] = (function () {
             ctxArray.push(canvasArray[i].getContext('2d'));
         }
 
+        // get dimensions of display element
+        const disp_size = body.getBoundingClientRect();
+
 
         //Set canvases width, height, position and color;
         for (let i = 0; i < nApertures; i++) {
             canvasArray[i].width = getValueFromArrayOrNot(trial.aperture_width, i);
             canvasArray[i].height = getValueFromArrayOrNot(trial.aperture_height, i);
-            canvasArray[i].style.backgroundColor = getValueFromArrayOrNot(trial.brackground_color, i);
+            canvasArray[i].style.backgroundColor = getValueFromArrayOrNot(trial.background_color, i);
             containerArray[i].style.position = "absolute";
 
+
             if (Array.isArray(trial.aperture_position_left) && Array.isArray(trial.aperture_position_top)) {
-                containerArray[i].style.top = trial.aperture_position_top[i].toString() + "%";
+
+                // calculate top from display size (resize module doesn't work with top beeing a percentage)
+                let top = Math.round(trial.aperture_position_top[i] * disp_size.height / 100);
+                containerArray[i].style.top = top.toString() + "px";
+
                 containerArray[i].style.left = trial.aperture_position_left[i].toString() + "%";
             } else {
                 if (nApertures > 1) {
@@ -431,20 +448,21 @@ jsPsych.plugins["rok"] = (function () {
                     } else {
                         x = i * (100 / (nApertures + 1)) + (100 / (2 * (nApertures - 1)));
                     }
-                    containerArray[i].style.top = "50%";
+
+                    // calculate top from display size (resize module doesn't work with top being a percentage)
+                    let top = Math.round(trial.aperture_position_top * disp_size.height / 100);
+                    containerArray[i].style.top = top.toString() + "px";
+
                     containerArray[i].style.left = x.toString() + "%";
+
                 } else {
-                    containerArray[i].style.top = trial.aperture_position_top.toString() + "%";
+                    // calculate top from display size (resize module doesn't work with top being a percentage)
+                    let top = Math.round(trial.aperture_position_top * disp_size.height / 100);
+                    containerArray[i].style.top = top.toString() + "px";
+
                     containerArray[i].style.left = trial.aperture_position_left.toString() + "%";
                 }
             }
-
-            const rect = containerArray[i].getBoundingClientRect();
-
-            let t = Math.round(50 * canvasArray[i].height / rect.height);
-
-
-            containerArray[i].style.transform = "translate(-50%, -" + t.toString() + "%)";
         }
 
 
@@ -516,6 +534,14 @@ jsPsych.plugins["rok"] = (function () {
         //Calculate the number of coherent, opposite coherent, and incoherent oobs for movement/orientation
         for (let i = 0; i < nApertures; i++) {
             let nOob = getValueFromArrayOrNot(trial.number_of_oobs, i);
+
+            // set number of objects, if density_unit_area is set
+            if (trial.density_unit_area != null) {
+                let width = getValueFromArrayOrNot(trial.aperture_width, i);
+                let height = getValueFromArrayOrNot(trial.aperture_height, i);
+                let area = width * height;
+                nOob = nOob * area / trial.density_unit_area;
+            }
 
             let tmpCoherenceMovement = getValueFromArrayOrNot(trial.coherence_movement, i);
             let tmpOppositeCoherenceMovement = getValueFromArrayOrNot(trial.coherence_movement_opposite, i);
@@ -763,7 +789,6 @@ jsPsych.plugins["rok"] = (function () {
                 "movement_speed_randomisation": trial.movement_speed_randomisation,
                 "aperture_width": trial.aperture_width,
                 "aperture_height": trial.aperture_height,
-                "oob_color": trial.oob_color,
                 "background_color": trial.background_color,
                 "frame_rate": frameRate, //The average frame rate for the trial
                 "frame_rate_array": JSON.stringify(frameRateArray), //The array of ms per frame in this trial, in the form of a JSON string
@@ -773,6 +798,7 @@ jsPsych.plugins["rok"] = (function () {
                 "random_movemet_type": trial.random_movement_type,
                 "random_orientation_type": trial.random_orientation_type,
                 "number_of_apertures": trial.number_of_apertures,
+                "density_unit_area": trial.density_unit_area,
                 "prompt": trial.prompt,
                 "aperture_position_left": trial.aperture_position_left,
                 "aperture_position_top": trial.aperture_position_top
@@ -1063,7 +1089,7 @@ class Oob {
         }
         this.speedRes = canvas.width * speed / 100 * (1 + (randomisation / 100 * Math.random() - randomisation / 100));
         if (trial.units === 'px') {
-            this.speedRes =  speed* (1 + (randomisation / 100 * Math.random() - randomisation / 100));
+            this.speedRes = speed * (1 + (randomisation / 100 * Math.random() - randomisation / 100));
         }
         this.orientation = orientation;
         this.movementDirection = movementDirection;
