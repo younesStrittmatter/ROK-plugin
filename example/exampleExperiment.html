@@ -22,6 +22,9 @@
 
     <!-- Loading the preload-plugin, so that images can be loaded before the experiment starts and not during the trials-->
     <script src="src/vendor/jsPsych/plugins/jspsych-preload.js"></script>
+
+    <!-- Loading the resize-plugin to show how resizing works with density instead of raw number to create more consistent stimuli presentation independent on monitor size or resolution -->
+    <script src="src/vendor/jsPsych/plugins/jspsych-resize.js"></script>
 </head>
 <body>
 <script>
@@ -124,7 +127,7 @@
         fade_out: [0,1],
     };
 
-    timeline.push(trial4)
+    timeline.push(trial4);
 
     // Setting animated images as stimulus. Fade out images on the edges of the aperture. Mirror images instead of rotating them all the way (no upside down birds)
     // Set congruency mode to 2 so that movement and orientation of incoherent oobs are the same. Randomise movement speed (not direction!) so that oobs move with different speed.
@@ -152,6 +155,30 @@
     };
 
     timeline.push(trial5);
+
+    // RMeasuring a credit card and resizing the display to have 150 pixels equal an inch.
+    let resize = {
+        type: 'resize',
+        item_width: 3 + 3/8,
+        item_height: 2 + 1/8,
+        prompt: "<p>Click and drag the lower right corner of the box until the box is the same size as a credit card held up to the screen.</p>",
+        pixels_per_unit: 150
+    };
+
+    timeline.push(resize);
+
+    // Seting the trial with density instead of raw number of objects
+    let trial6 = {
+        type: 'rok', // plugin type to tell jsPsych witch trial-type to use
+        choices: ['f'], // valid key presses
+        correct_choice: 'f', // correct key press
+        trial_duration: 0, // duration of stimulus presentation, 0 for infinite (valid key press ends the trial)
+        number_of_oobs: 5,
+        density_unit_area: 150*150  // in the resize trial we set 150px to be one inch. Here we set the density unit area to be 150px*150px.
+                                    // This sets the density of objects to 5 per square inch.
+    };
+
+    timeline.push(trial6);
 
 
 
