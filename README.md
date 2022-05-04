@@ -1,3 +1,5 @@
+### <b>A newer version for jsPsych 7 is available on https://github.com/jspsych/jspsych-contrib</b> ###
+
 #JS-ROK-PLUGIN V1.0
 
 ####A plugin for jsPsych to display orientated objects instead of dots in a RDK.  
